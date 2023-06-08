@@ -9,6 +9,7 @@ public enum Signal {
     FILE_COMMAND,
     CLOSING,
     ASK,
+    LOCAL,
     WAIT;
 
     public byte[] bytes() {

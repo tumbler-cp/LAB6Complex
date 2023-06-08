@@ -37,7 +37,13 @@ public class ClientHandler implements Handler {
                     fin = new FileInputStream(file);
                 } catch (FileNotFoundException fnf) {
                     System.out.println("Сервер запросил файл. Запрошенный файл не найден: ");
-                    return true;
+                    try {
+                        file.createNewFile();
+                        fin = new FileInputStream(file);
+                    } catch (IOException io) {
+                        System.out.println("Ошибка при создании ложного файла!");
+                        return true;
+                    }
                 }
                 try {
                     network.sendFile(fin);
