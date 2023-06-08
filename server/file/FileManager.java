@@ -6,7 +6,9 @@ import com.opencsv.CSVWriter;
 import com.opencsv.exceptions.CsvValidationException;
 import dragon.Dragon;
 import exceptions.EmptyCollectionException;
+import exceptions.IncorrectValueException;
 import exceptions.NoSuchOptionException;
+import server.Server;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -58,8 +60,12 @@ public class FileManager {
         while ((currentLine = in.readNext()) != null) {
             if (currentLine.length == 0) return;
             try {
-                if (!collection.insertWithKey(Integer.parseInt(currentLine[0]), Dragon.parseDrag(currentLine, true))) {
-                    System.out.println("Дракон с id " + Dragon.parseDrag(currentLine, true).getId() + " неправильный.");
+                try {
+                    if (!collection.insertWithKey(Integer.parseInt(currentLine[0]), Dragon.parseDrag(currentLine, true))) {
+                        System.out.println("Дракон с id " + Dragon.parseDrag(currentLine, true).getId() + " неправильный.");
+                    }
+                } catch (IncorrectValueException e) {
+                    System.out.println("Неправильные данные в файле. Дракон не подошел по условиям.");
                 }
             } catch (NoSuchOptionException n) {
                 System.out.println("Неправильный формат данных в файле.");

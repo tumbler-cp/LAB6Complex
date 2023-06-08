@@ -2,9 +2,10 @@ package commands.collManaging;
 
 import collection.CollectionManager;
 import commands.Command;
+import common.Signal;
 import dragon.*;
 import exceptions.IdNotFoundException;
-import exceptions.IncorrectFieldException;
+import exceptions.IncorrectValueException;
 import exceptions.NoSuchOptionException;
 
 import java.io.IOException;
@@ -75,7 +76,7 @@ public class UpdateId extends Command implements Serializable {
             }
         } catch (NoSuchOptionException n) {
             addToResponse("Такого выбора нет!");
-        } catch (IncorrectFieldException n){
+        } catch (IncorrectValueException n){
             addToResponse("Неправильное значение DragonCave");
         }
     }
@@ -104,6 +105,7 @@ public class UpdateId extends Command implements Serializable {
                 miniExecute(argLine);
             }
         }
+        network.request(Signal.TEXT, response());
         return true;
     }
 }

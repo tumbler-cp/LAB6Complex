@@ -5,9 +5,10 @@ import commands.Command;
 import common.Signal;
 import common.UDPInterface;
 import dragon.*;
-import exceptions.IncorrectFieldException;
+import exceptions.IncorrectValueException;
 import exceptions.KeyNotFoundException;
 import exceptions.NoSuchOptionException;
+import exceptions.TimeOutException;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -61,7 +62,7 @@ public class ReplaceGreater extends Command implements Serializable {
                             2)Good
                             3)Chaotic_Evil
                         7 - cave. <int Num. of treasure>
-                        """.getBytes()
+                        """
         );
     }
 
@@ -69,14 +70,19 @@ public class ReplaceGreater extends Command implements Serializable {
     public boolean execute() throws NoSuchOptionException, IOException {
         isRunning = true;
         Dragon dragon;
-        try {
-            dragon = collection.getByKey(Integer.parseInt(getArgs()[0]));
-        } catch (KeyNotFoundException k) {
-            network.request(Signal.TEXT, "Элемента с таким ключом не существует".getBytes());
+        if (getArgs()[0].equals("man")){
+            manual();
             isRunning = false;
             return true;
         }
-        network.request(Signal.TEXT, dragon.toString().getBytes());
+        try {
+            dragon = collection.getByKey(Integer.parseInt(getArgs()[0]));
+        } catch (KeyNotFoundException k) {
+            network.request(Signal.TEXT, "Элемента с таким ключом не существует");
+            isRunning = false;
+            return true;
+        }
+        network.request(Signal.TEXT, dragon.toString());
         if (getArgs().length > 1) {
             miniExecute1(dragon);
             isRunning = false;
@@ -94,7 +100,7 @@ public class ReplaceGreater extends Command implements Serializable {
      */
     private void miniExecute1(Dragon dragon) throws NoSuchOptionException {
         String[] args = this.getArgs();
-        byte[] message = "Если вы видите это сообщение замена выполнена.".getBytes();
+        String message = "Если вы видите это сообщение замена выполнена.";
         switch (args[1]) {
             case "1" -> {
                 if (dragon.getName().compareTo(args[2]) > 0) return;
@@ -131,7 +137,7 @@ public class ReplaceGreater extends Command implements Serializable {
                     if (dragon.getCave().compareTo(new DragonCave(Integer.parseInt(args[2]))) > 0) return;
                     dragon.setCave(new DragonCave(Integer.parseInt(args[2])));
                     network.request(Signal.TEXT, message);
-                } catch (IncorrectFieldException io) {
+                } catch (IncorrectValueException io) {
                     network.request(Signal.TEXT, "Это значение для DragonCave неверное".getBytes());
                 }
             }
@@ -141,22 +147,37 @@ public class ReplaceGreater extends Command implements Serializable {
     private void miniExecute2(Dragon dragon) throws IOException {
         String buffer;
         while (true) {
-            network.request(Signal.ASK, "Выберите поле которое хотите изменить: ".getBytes());
-            buffer = new String(network.receive());
+            network.request(Signal.ASK, "Выберите поле которое хотите изменить: ");
+            while (true) {
+                try {
+                    buffer = new String(network.receive());
+                } catch (TimeOutException e) {
+                    continue;
+                }
+                break;
+            }
             buffer = buffer.trim();
             if (Integer.parseInt(buffer) > 7 || Integer.parseInt(buffer) < 1) {
-                network.request(Signal.ASK, "Такой выбор отсутствует!".getBytes());
+                network.request(Signal.ASK, "Такой выбор отсутствует!");
                 continue;
             }
             break;
         }
-        network.request(Signal.ASK, "Введите/Выберите значение: ".getBytes());
-        String valBuff = new String(network.receive());
+        network.request(Signal.ASK, "Введите/Выберите значение: ");
+        String valBuff;
+        while (true) {
+            try {
+                valBuff = new String(network.receive());
+            } catch (TimeOutException e) {
+                continue;
+            }
+            break;
+        }
         setArgs(new String[]{getArgs()[0], buffer, valBuff.trim()});
         try {
             miniExecute1(dragon);
         } catch (NoSuchOptionException e) {
-            network.request(Signal.TEXT, "Ошибка".getBytes());
+            network.request(Signal.TEXT, "Ошибка");
         }
     }
 }

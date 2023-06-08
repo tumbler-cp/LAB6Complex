@@ -1,6 +1,7 @@
 package dragon;
 
 import exceptions.NoSuchOptionException;
+import server.Server;
 
 /**
  * Type of Dragon
@@ -21,7 +22,10 @@ public enum DragonType {
             case "UNDERGROUND", "1" -> UNDERGROUND;
             case "AIR", "2" -> AIR;
             case "FIRE", "3" -> FIRE;
-            default -> throw new NoSuchOptionException();
+            default -> {
+                Server.logger.error("Указанный тип дракона отсутствует: " + string);
+                throw new NoSuchOptionException();
+            }
         };
     }
 }

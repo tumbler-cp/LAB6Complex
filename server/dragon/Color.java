@@ -1,6 +1,7 @@
 package dragon;
 
 import exceptions.NoSuchOptionException;
+import server.Server;
 
 /**
  * Color of Dragon
@@ -17,7 +18,7 @@ public enum Color {
     /**
      * Parse String to Color
      *
-     * @param string - Color. Uppercase name of color or special number
+     * @param string Color. Uppercase name of color or special number
      * @return Color
      */
     public static Color toColor(String string) throws NoSuchOptionException {
@@ -27,7 +28,10 @@ public enum Color {
             case "BLUE", "3" -> BLUE;
             case "YELLOW", "4" -> YELLOW;
             case "BROWN", "5" -> BROWN;
-            default -> throw new NoSuchOptionException();
+            default -> {
+                Server.logger.error("Такой цвет отсутствует: " + string);
+                throw new NoSuchOptionException();
+            }
         };
     }
 }

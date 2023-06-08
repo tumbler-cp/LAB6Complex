@@ -1,10 +1,9 @@
 package dragon;
 
-import exceptions.IncorrectFieldException;
+import exceptions.IncorrectValueException;
 import exceptions.NoSuchOptionException;
 import server.ServerTerminal;
 
-import java.io.IOException;
 import java.time.LocalDate;
 
 /**
@@ -285,9 +284,7 @@ public class Dragon implements Comparable<Dragon> {
      * @return Dragon
      * @throws NoSuchOptionException If there are problems with enums of Dragon
      */
-    public static Dragon parseDrag(String[] args, boolean fileIn) throws NoSuchOptionException, IOException {
-        //12,"12","in","1.0 2.0","2023-03-18","12","GREEN","UNDERGROUND","WISE","12"
-        //12, "in","1.0 2.0","12","GREEN","UNDERGROUND","WISE","12"
+    public static Dragon parseDrag(String[] args, boolean fileIn) throws NoSuchOptionException {
         int offset = fileIn ? 1 : 0;
         return new Dragon(null, null, 0, null, null, null, null) {{
             if (fileIn) setId(Integer.parseInt(args[1]));
@@ -300,7 +297,7 @@ public class Dragon implements Comparable<Dragon> {
             setCharacter(DragonCharacter.parse(args[6 + 2 * offset]));
             try {
                 setCave(new DragonCave(Integer.parseInt(args[7 + 2 * offset])));
-            } catch (IncorrectFieldException e) {
+            } catch (IncorrectValueException e) {
                 System.out.println("Переданное значение для DragonCave неправильное");
             }
         }};

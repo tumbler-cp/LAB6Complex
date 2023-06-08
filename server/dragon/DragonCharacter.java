@@ -1,6 +1,7 @@
 package dragon;
 
 import exceptions.NoSuchOptionException;
+import server.Server;
 
 /**
  * Dragon character
@@ -23,7 +24,10 @@ public enum DragonCharacter {
             case "WISE", "1" -> WISE;
             case "GOOD", "2" -> GOOD;
             case "CHAOTIC_EVIL", "3" -> CHAOTIC_EVIL;
-            default -> throw new NoSuchOptionException();
+            default -> {
+                Server.logger.error("Такой характер отсутствует: " + string);
+                throw new NoSuchOptionException();
+            }
         };
     }
 }

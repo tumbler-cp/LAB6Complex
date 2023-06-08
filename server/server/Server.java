@@ -10,18 +10,26 @@ import file.FileManager;
 
 import java.io.IOException;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 public class Server {
+    public static final Logger logger = LogManager.getLogger();
+    public static UDPServer serverUDP;
     public static void main(String[] args) throws IOException {
+        logger.info("Начало выполнения программы");
+        String HOST = "localhost";
+        int PORT = 666;
         CollectionManager collection = new CollectionManager();
         FileManager collectionFile;
         try {
             collectionFile = new FileManager(args[0], collection);
         } catch (ArrayIndexOutOfBoundsException a) {
             System.out.println("Напишите путь к файлу в аргументах программы!");
+            logger.error("Не был указан путь к .csv - файлу с коллекцией");
             return;
         }
-
-        UDPServer serverUDP = new UDPServer("localhost", 4567);
+        serverUDP = new UDPServer(HOST, PORT);
         Command.setNetwork(serverUDP);
         CommandManager commands = new CommandManager(){{
             add("help", new Help(this));
@@ -38,13 +46,13 @@ public class Server {
             add("replace_if_greater", new ReplaceGreater(collection, serverUDP));
         }};
         var save = new Save(collectionFile);
-
-
-        var terminal = new ServerTerminal(serverUDP, commands);
+        var terminal = new ServerTerminal(serverUDP, commands, collectionFile);
         commands.add("execute_script", new ExecuteScript(terminal, commands, serverUDP));
         terminal.run();
         save.execute();
         serverUDP.disconnect();
+        logger.info("Закрытие канала...");
         serverUDP.close();
+        logger.info("Канал был закрыт!");
     }
 }

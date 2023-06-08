@@ -5,8 +5,11 @@ import commands.Command;
 import common.Signal;
 import common.UDPInterface;
 import dragon.*;
-import exceptions.IncorrectFieldException;
+import exceptions.ValueAlreadyExist;
+import exceptions.IncorrectValueException;
 import exceptions.NoSuchOptionException;
+import exceptions.TimeOutException;
+import server.Server;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -55,9 +58,15 @@ public class Insert extends Command implements Serializable {
         Dragon d = new Dragon(null, null, 0, null, null, null, null);
         String buff;
         for (int i = 0; i < 7; ++i) {
-            System.out.println("Test 2 passed!");
             network.request(Signal.ASK , mans[i]);
-            buff = new String(network.receive()).trim();
+            while (true) {
+                try {
+                    buff = new String(network.receive()).trim();
+                } catch (TimeOutException e) {
+                    continue;
+                }
+                break;
+            }
             System.out.println(buff);
             try {
                 switch (i) {
@@ -71,17 +80,26 @@ public class Insert extends Command implements Serializable {
                 }
             } catch (NoSuchOptionException n) {
                 network.request(Signal.TEXT, "Такой выбор отсутствует!");
+                Server.logger.error("Ошибка неправильного выбора");
+                Server.logger.error(n.getCause());
                 i--;
-            } catch (NumberFormatException | IncorrectFieldException n) {
+            } catch (NumberFormatException | IncorrectValueException n) {
                 network.request(Signal.TEXT ,"Неправильное значение для данного поля");
+                Server.logger.error("Ошибка неправильного формата");
+                Server.logger.error(n.getCause());
                 i--;
             }
         }
-        if (collectionManager.insertWithKey(key, d)) network.request(Signal.TEXT, "Дракон успешно добавлен!");
-        else network.request(Signal.TEXT,"Ошибка при добавлении!");
+        try {
+            collectionManager.insertWithKey(key, d);
+            network.request(Signal.TEXT, "Дракон успешно добавлен!");
+        } catch (IncorrectValueException e) {
+            System.out.println("Дракон не подходит под условия!");
+            Server.logger.error("Дракон не подошел под условия");
+        }
     }
     public void manual() {
-        addToResponse("""
+        network.request(Signal.TEXT,"""
                        Syntax: insert <int key> <values[]>\s
                        Vars:
                                1 - name                           | 1 - GREEN       | 1 - \u001B[33mUNDERGROUND\u001B[0m  | 1 - WISE
@@ -113,12 +131,20 @@ public class Insert extends Command implements Serializable {
         }
         System.out.println("Здесь");
         int key = Integer.parseInt(getArgs()[0]);
-        if (collectionManager.key_check(key)) {
-            isRunning = false;
-            return true;
+        try {
+            if (collectionManager.key_check(key)) {
+                isRunning = false;
+                return true;
+            }
+        } catch (ValueAlreadyExist e) {
+            network.request(Signal.TEXT, "Дракон с таким ключом уже существует");
         }
         if (dragArg != null) {
-            collectionManager.insertWithKey(key, dragArg);
+            try {
+                collectionManager.insertWithKey(key, dragArg);
+            } catch (IncorrectValueException e) {
+                network.request(Signal.TEXT, "Неподходящий дракон!");
+            }
             dragArg = null;
             isRunning = false;
             return true;
@@ -136,12 +162,16 @@ public class Insert extends Command implements Serializable {
                     finalArgs[i - 1] = args[i];
                 }
             }
-            if (collectionManager.insertWithKey(Integer.parseInt(finalArgs[0]), Dragon.parseDrag(finalArgs, false))) {
-                network.request(Signal.TEXT, "Дракон успешно добавлен");
-            } else {
-                network.request(Signal.TEXT, "Неизвестная ошибка");
-                isRunning = false;
-                return true;
+            try {
+                if (collectionManager.insertWithKey(Integer.parseInt(finalArgs[0]), Dragon.parseDrag(finalArgs, false))) {
+                    network.request(Signal.TEXT, "Дракон успешно добавлен");
+                } else {
+                    network.request(Signal.TEXT, "Неизвестная ошибка");
+                    isRunning = false;
+                    return true;
+                }
+            } catch (IncorrectValueException e) {
+                network.request(Signal.TEXT, "Неподходящий дракон");
             }
             isRunning = false;
             return true;

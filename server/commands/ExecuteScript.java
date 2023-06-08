@@ -1,9 +1,9 @@
 package commands;
 
-import common.Request;
 import common.Signal;
 import common.UDPInterface;
 import exceptions.EmptyCollectionException;
+import exceptions.FileLoadException;
 import server.ServerTerminal;
 import server.UDPServer;
 
@@ -51,7 +51,7 @@ public class ExecuteScript extends Command implements Serializable {
         network.request(Signal.FILE_COMMAND, getArgs()[0]);
         try {
             ((UDPServer)network).receiveFile(getArgs()[0]);
-        } catch (IOException e) {
+        } catch (IOException | FileLoadException f) {
             System.out.println("Ошибка получения файла!");
             return false;
         }

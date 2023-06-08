@@ -8,25 +8,44 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
-public class ClientTerminal extends Terminal {
+/**
+ * Terminal for interaction with user.
+ * @author Abdujalol Khodjaev
+ * @see ClientHandler
+ * @see UDPClient
+ */
+public class ClientTerminal {
     private final UDPInterface datagram;
     private final Scanner userIn;
     private final List<CommandClient> commands;
     private final Handler handler;
+
+    /**
+     * Default constructor
+     * @param udp Clients UDP network
+     * @param commandManager List of Client Command Objects
+     * @param scanner Scanner to read user in from
+     * @param handler Handler for server responses
+     */
     public ClientTerminal(UDPInterface udp, List<CommandClient> commandManager, Scanner scanner, Handler handler){
         userIn = scanner;
         datagram = udp;
         commands = commandManager;
         this.handler = handler;
+        Client.logger.info("Создан терминал");
     }
-    @Override
+
+    /**
+     * Inherited method. Programs' main loop.
+     * @throws IOException May be thrown while receiving data
+     */
     public void run() throws IOException {
         while (true) {
             String[] line;
             try {
                 line = userIn.nextLine().split(" ");
             } catch (NoSuchElementException n) {
-                System.out.println("Выключение...");
+                Client.logger.info("Выключение...");
                 return;
             }
             String commType = line[0];
@@ -42,44 +61,21 @@ public class ClientTerminal extends Terminal {
             }
             if (command == null){
                 System.out.println("Команда " + commType + " не найдена.");
+                Client.logger.info("Команда " + commType + " не найдена.");
                 continue;
             }
             command.setArgs(commArgs);
             Request request = new Request(command.signal(), command);
+            Client.logger.info("Создан запрос " + request.getSignal() + request.getObj());
             if (request.validate()) {
                 datagram.send(request.bytes());
+                Client.logger.info("Запрос отправлен");
                 Request response;
                 do {
                     response = SerializationUtils.deserialize(datagram.receive());
+                    Client.logger.info("Получен ответ с сигналом " + response.getSignal());
                 } while (handler.handle(response));
             }
-            /*
-            if (command.validate())
-            {
-                datagram.request(command.signal(), SerializationUtils.serialize(command));
-                var signal = (Signal) SerializationUtils.deserialize(datagram.receive());
-                while (signal != Signal.CLOSING) {
-                        if (signal == Signal.ASK) {
-                            System.out.print(new String(datagram.receive()));
-                            try {
-                                datagram.send(userIn.nextLine().getBytes());
-                            }
-                            catch (NoSuchElementException n) {
-                                System.out.println(ServerTerminal.RED + "Выключение..." + ServerTerminal.RESET);
-                            }
-                        } else if (signal == Signal.FILE_COMMAND) {
-                            String filename = new String(datagram.receive()).trim();
-                            File toSend = new File(filename);
-                            datagram.send(SerializationUtils.serialize(toSend));
-                        }
-                        else if (signal == Signal.WAIT) {
-                            System.out.println("Сервер отправил сигнал ожидания. Повторите запрос через некоторое время!");
-                            break;
-                        }
-                        else System.out.print(new String(datagram.receive()));
-                    signal = SerializationUtils.deserialize(datagram.receive());
-                }
-             */
         }
     }
 }

@@ -1,6 +1,6 @@
 package dragon;
 
-import exceptions.IncorrectFieldException;
+import exceptions.IncorrectValueException;
 
 /**
  * Class of Dragon cave
@@ -15,12 +15,12 @@ public class DragonCave implements Comparable<DragonCave> {
      *
      * @param number_Of_Treasures Number of treasures
      */
-    public DragonCave(int number_Of_Treasures) throws IncorrectFieldException {
+    public DragonCave(int number_Of_Treasures) throws IncorrectValueException {
         setNumberOfTreasures(number_Of_Treasures);
     }
 
-    public void setNumberOfTreasures(long numberOfTreasures) throws IncorrectFieldException {
-        if (numberOfTreasures <= 0) throw new IncorrectFieldException();
+    public void setNumberOfTreasures(long numberOfTreasures) throws IncorrectValueException {
+        if (numberOfTreasures <= 0) throw new IncorrectValueException();
         this.numberOfTreasures = numberOfTreasures;
     }
 

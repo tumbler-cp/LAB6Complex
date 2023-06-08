@@ -5,7 +5,7 @@ package dragon;
  *
  * @author Abdujalol Khodjaev
  */
-public class Coordinates implements Comparable {
+public class Coordinates implements Comparable<Coordinates> {
     /**
      * Coordinate x
      */
@@ -60,10 +60,9 @@ public class Coordinates implements Comparable {
      * @param o the object to be compared.
      * @return 0 or 1
      */
+
     @Override
-    public int compareTo(Object o) {
-        Coordinates obj = (Coordinates) o;
-        if (this.y > obj.y) return 1;
-        return 0;
+    public int compareTo(Coordinates o) {
+        return Float.compare(this.y, o.y);
     }
 }

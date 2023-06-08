@@ -2,6 +2,7 @@ package commands;
 
 import commands.informational.Help;
 import exceptions.EmptyCollectionException;
+import server.Server;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -42,7 +43,10 @@ public class CommandManager implements Serializable {
      * @see Help
      */
     public Map<String, Command> get_map() throws EmptyCollectionException {
-        if (this.list.isEmpty()) throw new EmptyCollectionException();
+        if (this.list.isEmpty()) {
+            Server.logger.error("Пустая коллекция");
+            throw new EmptyCollectionException();
+        }
         return this.list;
     }
 }

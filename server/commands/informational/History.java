@@ -2,10 +2,13 @@ package commands.informational;
 
 import commands.Command;
 import common.Signal;
+import server.UDPServer;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.net.SocketAddress;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class of <b>history</b> command
@@ -16,7 +19,7 @@ public class History extends Command implements Serializable {
     /**
      * History list
      */
-    List<String> list = new ArrayList<>();
+    Map<SocketAddress, String[]> list = new HashMap<>();
 
     /**
      * Default constructor
@@ -31,14 +34,25 @@ public class History extends Command implements Serializable {
      * @param c - command name
      */
     public void add(String c) {
-        this.list.add(c);
-        if (list.size() > 14) list.remove(0);
+        String[] currentHistory = list.get(((UDPServer) network).getClientAddress());
+        if (currentHistory == null) {
+            currentHistory = new String[14];
+            Arrays.fill(currentHistory, "");
+            currentHistory[0] = c;
+            list.put(((UDPServer) network).getClientAddress(), currentHistory);
+            return;
+        }
+        String[] buff = new String[14];
+        System.arraycopy(currentHistory, 1, buff, 0, 13);
+        buff[13] = c;
+        list.put(((UDPServer) network).getClientAddress(), buff);
     }
 
     @Override
     public boolean execute() {
         int i = 1;
-        for (String s : list) {
+        String[] history = list.get(((UDPServer) network).getClientAddress());
+        for (String s : history) {
             addToResponse(i + " " + s);
             i++;
         }

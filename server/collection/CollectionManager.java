@@ -2,9 +2,8 @@ package collection;
 
 import common.Terminal;
 import dragon.Dragon;
-import exceptions.EmptyCollectionException;
-import exceptions.IdNotFoundException;
-import exceptions.KeyNotFoundException;
+import exceptions.*;
+import server.Server;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -35,23 +34,26 @@ public class CollectionManager {
         initDate = LocalDate.now();
     }
 
-    public boolean key_check(int key) {
+    public boolean key_check(int key) throws ValueAlreadyExist {
         if (this.dragons.containsKey(key)) {
-            System.out.println("Дракон с ключом " + key + "уже существует");
-            //System.out.println("Дракон с ключом" + key + " уже существует");
-            return true;
+            Server.logger.error("Ключ уже существует");
+            throw new ValueAlreadyExist();
         }
         return false;
     }
 
-    public boolean insertWithKey(int key, Dragon dragon) {
-        if (key_check(key)) return false;
+    public boolean insertWithKey(int key, Dragon dragon) throws IncorrectValueException {
+        try {
+            key_check(key);
+        } catch (ValueAlreadyExist e) {
+            return false;
+        }
         if (dragon.check()) {
             this.dragons.put(key, dragon);
             return true;
         }
-        System.out.println("Этот дракон не подходит под условия.");
-        return false;
+        Server.logger.error("Неподходящий дракон");
+        throw new IncorrectValueException();
     }
 
     /**
@@ -60,7 +62,9 @@ public class CollectionManager {
      * @return HashMap dragons
      */
     public HashMap<Integer, Dragon> get_collection() throws EmptyCollectionException {
-        if (this.dragons.isEmpty()) throw new EmptyCollectionException();
+        if (this.dragons.isEmpty()){
+            Server.logger.error("Пустая коллекция");
+            throw new EmptyCollectionException();}
         return this.dragons;
     }
 
@@ -74,7 +78,10 @@ public class CollectionManager {
     }
 
     public Dragon getByKey(int k) throws KeyNotFoundException {
-        if (!dragons.containsKey(k)) throw new KeyNotFoundException();
+        if (!dragons.containsKey(k)){
+            Server.logger.error("Ключ не найден");
+            throw new KeyNotFoundException();
+        }
         return this.dragons.get(k);
     }
 
@@ -82,6 +89,7 @@ public class CollectionManager {
         for (Dragon d : dragons.values()) {
             if (id == d.getId()) return d;
         }
+        Server.logger.error("id не найдено");
         throw new IdNotFoundException();
     }
 

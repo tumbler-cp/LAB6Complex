@@ -14,12 +14,11 @@ public class Table {
     private int max_id = 2,
             max_key = 3,
             max_name = 4,
-            max_coor = 11,
+            max_coords = 11,
             max_color = 5,
             max_character = 9,
             max_type = 4,
             max_cave = 4,
-            max_date = 14,
             max_age = 3;
 
     /**
@@ -27,7 +26,7 @@ public class Table {
      *
      * @param map HashMap of collectionManager
      */
-    public Table(Map map) {
+    public Table(Map<Integer, Dragon> map) {
         collection = map;
         reg_ints();
     }
@@ -40,7 +39,7 @@ public class Table {
             Dragon d = collection.get(k);
             if (d.getId().toString().length() > max_id) max_id = d.getId().toString().length();
             if (d.getName().length() > max_name) max_name = d.getName().length();
-            if (d.getCoordinates().toString().length() > max_coor) max_coor = d.getCoordinates().toString().length();
+            if (d.getCoordinates().toString().length() > max_coords) max_coords = d.getCoordinates().toString().length();
             if (d.getColor().toString().length() > max_color) max_color = d.getColor().toString().length();
             if (d.getCharacter().toString().length() > max_character)
                 max_character = d.getCharacter().toString().length();
@@ -65,7 +64,7 @@ public class Table {
         table.append("name").append(spc.repeat(max_name - 3)).append('|');
         table.append("age").append(spc.repeat(max_age - 2)).append('|');
         table.append("creation date" + ' ' + '|');
-        table.append("coordinates").append(spc.repeat(max_coor - 10)).append('|');
+        table.append("coordinates").append(spc.repeat(max_coords - 10)).append('|');
         table.append("color").append(spc.repeat(max_color - 4)).append('|');
         table.append("character").append(spc.repeat(max_character - 8)).append('|');
         table.append("type").append(spc.repeat(max_type - 3)).append('|');
@@ -90,7 +89,7 @@ public class Table {
             table.append(spc.repeat(4));
             table.append("|");
             table.append(d.getCoordinates());
-            table.append(spc.repeat(max_coor + 1 - d.getCoordinates().toString().length()));
+            table.append(spc.repeat(max_coords + 1 - d.getCoordinates().toString().length()));
             table.append("|");
             table.append(d.getColor());
             table.append(spc.repeat(max_color + 1 - d.getColor().toString().length()));
